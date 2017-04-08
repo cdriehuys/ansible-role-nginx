@@ -1,0 +1,9 @@
+{% for server in nginx_site_servers %}
+server {
+    listen {{ server.listen }};
+    server_name {{ server.name }};
+
+{% if server.extra_params is defined and server.extra_params %}{{ server.extra_params }}{% endif %}
+}
+
+{% endfor %}

@@ -40,3 +40,9 @@
     chmod -c {{ nginx_site_root_file_mode }} {} \;
   register: chmod_result
   changed_when: 'chmod_result.stdout != ""'
+
+- name: Upload site configuration
+  template:
+    src: nginx-site.conf.j2
+    dest: "{{ nginx_site_conf }}"
+  notify: reload nginx
