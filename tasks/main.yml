@@ -1,0 +1,26 @@
+---
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_time }}"
+
+- name: Create groups for NGINX user
+  group:
+    name: "{{ item }}"
+  with_items: "{{ nginx_user_groups }}"
+
+- name: Create NGINX user
+  user:
+    name: "{{ nginx_user }}"
+    groups: "{{ nginx_user_groups | join(',') }}"
+    createhome: no
+
+- name: Set nginx user
+  lineinfile:
+    dest: "{{ nginx_conf_path }}"
+    regexp: '^user'
+    line: 'user {{ nginx_user }};'
+    validate: 'nginx -t -c %s'
+  notify: reload nginx
