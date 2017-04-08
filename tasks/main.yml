@@ -5,3 +5,9 @@
     state: present
     update_cache: yes
     cache_valid_time: "{{ apt_cache_time }}"
+
+- name: Create NGINX user
+  user:
+    name: "{{ nginx_user }}"
+    groups: "{{ nginx_user_groups | join(',') }}"
+    createhome: no

@@ -1,1 +1,4 @@
 apt_cache_time: 3600
+
+nginx_user: nginx
+nginx_user_groups: []
