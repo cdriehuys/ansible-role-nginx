@@ -16,3 +16,10 @@
     name: "{{ nginx_user }}"
     groups: "{{ nginx_user_groups | join(',') }}"
     createhome: no
+
+- name: Set nginx user
+  lineinfile:
+    dest: "{{ nginx_conf_path }}"
+    regexp: '^user'
+    line: 'user {{ nginx_user }};'
+    validate: 'nginx -t -c %s'
