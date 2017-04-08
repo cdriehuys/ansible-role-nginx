@@ -1,0 +1,61 @@
+---
+# Sudo is required for some docker commands
+sudo: required
+
+services:
+  - docker
+
+# Run tests for each supported OS
+#
+# distro: Distro name corresponding to docker images
+# init: The init system corresponding to the distro
+# run_opts: Additional arguments to pass when creating the docker container
+env:
+  - distro: ubuntu1604
+    init: /lib/systemd/systemd
+    run_opts: "--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+
+# Provision docker container
+before_install:
+  # Pull latest version of the docker image
+  - 'docker pull cdriehuys/docker-${distro}-ansible:latest'
+
+  # Create random file to store container ID
+  - container_id=$(mktemp)
+
+  # Run container with role mounted inside
+  - >
+    docker run --detach --volume="${PWD}":/etc/ansible/roles/role_under_test:ro
+    ${run_opts} cdriehuys/docker-${distro}-ansible:latest
+    "${init}" > "${container_id}"
+
+# Start docker container and run tests
+script:
+  # Test role syntax
+  - >
+    docker exec --tty "$(cat ${container_id})" env TERM=xterm
+    ansible-playbook /etc/ansible/roles/role_under_test/tests/test.yml --syntax-check
+
+  # Run role first time
+  - >
+    docker exec --tty "$(cat ${container_id})" env TERM=xterm
+    ansible-playbook /etc/ansible/roles/role_under_test/tests/test.yml
+
+  # Create temp file for idempotency test results
+  - idempotence=$(mktemp)
+
+  # Run role a second time
+  - >
+    docker exec "$(cat ${container_id})"
+    ansible-playbook /etc/ansible/roles/role_under_test/tests/test.yml
+    | tee -a ${idempotence}
+
+  # Make sure second run didn't change anything
+  - >
+    tail ${idempotence}
+    | grep -q 'changed=0.*failed=0'
+    && (echo 'Idempotence test: pass' && exit 0)
+    || (echo 'Idempotence test: fail' && exit 1)
+
+notifications:
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/

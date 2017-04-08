@@ -1,0 +1,55 @@
+---
+- name: Install NGINX
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+    cache_valid_time: "{{ apt_cache_time }}"
+
+- name: Create groups for NGINX user
+  group:
+    name: "{{ item }}"
+  with_items: "{{ nginx_user_groups }}"
+
+- name: Create NGINX user
+  user:
+    name: "{{ nginx_user }}"
+    groups: "{{ nginx_user_groups | join(',') }}"
+    createhome: no
+
+- name: Set nginx user
+  lineinfile:
+    dest: "{{ nginx_conf_path }}"
+    regexp: '^user'
+    line: 'user {{ nginx_user }};'
+    validate: 'nginx -t -c %s'
+  notify: reload nginx
+
+- name: Create site root
+  file:
+    path: "{{ nginx_site_root }}"
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user_group | default(omit) }}"
+    mode: "{{ nginx_site_root_mode }}"
+    recurse: yes
+
+- name: Set site root file permissions
+  command: >
+    find {{ nginx_site_root }} -type f -exec
+    chmod -c {{ nginx_site_root_file_mode }} {} \;
+  register: chmod_result
+  changed_when: 'chmod_result.stdout != ""'
+
+- name: Upload site configuration
+  template:
+    src: nginx-site.conf.j2
+    dest: "{{ nginx_site_conf }}"
+  notify: reload nginx
+
+- name: Enable site
+  file:
+    src: "{{ nginx_site_conf }}"
+    dest: "{{ nginx_enabled_site_conf }}"
+    state: link
+  notify: reload nginx

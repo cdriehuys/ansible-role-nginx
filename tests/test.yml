@@ -1,0 +1,9 @@
+---
+- hosts: all
+  remote_user: root
+  vars:
+    ansible_user_public_keys:
+      - tests/key.pub
+
+  roles:
+    - role_under_test
