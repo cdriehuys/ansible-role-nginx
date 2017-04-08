@@ -46,3 +46,10 @@
     src: nginx-site.conf.j2
     dest: "{{ nginx_site_conf }}"
   notify: reload nginx
+
+- name: Enable site
+  file:
+    src: "{{ nginx_site_conf }}"
+    dest: "{{ nginx_enabled_sites_dir }}"
+    state: link
+  notify: reload nginx
