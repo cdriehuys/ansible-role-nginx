@@ -32,5 +32,9 @@ tail ${idempotence} \
 && (echo 'Idempotence test: pass' && exit 0) \
 || (echo 'Idempotence test: fail' && exit 1)
 
+# Test if web server is running
+docker exec --tty "$(cat ${container_id})" env TERM=xterm \
+curl localhost
+
 # Kill containers
 docker kill "$(cat ${container_id})"
