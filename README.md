@@ -19,9 +19,11 @@ apt_cache_time: 3600
 nginx_user: nginx
 nginx_user_groups: []
 
-nginx_conf_path: /etc/nginx/nginx.conf      # Path to main nginx config file
-nginx_site_conf: /etc/nginx/sites-availabe/{{ inventory_hostname }}.conf
-nginx_enabled_sites_dir: /etc/nginx/sites-enabled
+nginx_conf_root: /etc/nginx
+nginx_conf_path: "{{ nginx_conf_root }}/nginx.conf"
+nginx_site_conf_name: "{{ inventory_hostname }}.conf"
+nginx_site_conf: "{{ nginx_conf_root }}/sites-available/{{ nginx_site_conf_name }}"
+nginx_enabled_site_conf: "{{ nginx_conf_root }}/sites-enabled/{{ nginx_site_conf_name }}"
 
 nginx_site_root: /var/www/{{ inventory_hostname }}
 nginx_site_root_mode: 0755

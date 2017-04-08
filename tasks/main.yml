@@ -50,6 +50,6 @@
 - name: Enable site
   file:
     src: "{{ nginx_site_conf }}"
-    dest: "{{ nginx_enabled_sites_dir }}"
+    dest: "{{ nginx_enabled_site_conf }}"
     state: link
   notify: reload nginx
