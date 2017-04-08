@@ -29,6 +29,12 @@ that the user belongs to.
 nginx_conf_path: /etc/nginx/nginx.conf      # Path to main nginx config file
 ```
 
+```YAML
+nginx_site_root: /var/www/{{ inventory_hostname }}
+nginx_site_root_mode: 0755
+nginx_site_root_file_mode: 0644
+```
+
 Dependencies
 ------------
 

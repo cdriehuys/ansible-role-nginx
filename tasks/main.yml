@@ -24,3 +24,19 @@
     line: 'user {{ nginx_user }};'
     validate: 'nginx -t -c %s'
   notify: reload nginx
+
+- name: Create site root
+  file:
+    path: "{{ nginx_site_root }}"
+    state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user_group | default(omit) }}"
+    mode: "{{ nginx_site_root_mode }}"
+    recurse: yes
+
+- name: Set site root file permissions
+  command: >
+    find {{ nginx_site_root }} -type f -exec
+    chmod -c {{ nginx_site_root_file_mode }} {} \;
+  register: chmod_result
+  changed_when: 'chmod_result.stdout != ""'
